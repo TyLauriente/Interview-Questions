@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 
 /*
 Given an array of integers, find the first missing positive integer in linear time and constant space. 
@@ -9,34 +10,67 @@ For example, the input [3, 4, -1, 1] should give 2.
 The input [1, 2, 0] should give 3.
 */
 
-int FindFirstMissingPositive(int arr[], int size) // Non Linear
+int FindMissingNoNegatives(int arr[], int size) // Only works on a non-negative array set
 {
-	int lowest = 1;
-	bool good = true;
-	do
+	for (int index = 0; index < size; ++index)
 	{
-		good = true;
-
-		for (int i = 0; i < size; i++)
+		if (abs((double)arr[index]) - 1 < size && arr[(int)abs((double)arr[index]) - 1] > 0)
 		{
-			if (arr[i] == lowest)
-			{
-				good = false;
-				lowest++;
-			}
+			arr[(int)abs((double)arr[index]) - 1] = -arr[(int)abs((double)arr[index]) - 1];
 		}
+	}
 
-	} while (!good);
+	for (int index = 0; index < size; ++index)
+	{
+		if (arr[index] > 0)
+		{
+			return index + 1;
+		}
+	}
 
-	return lowest;
+	return size + 1;
+}
+
+template<class T>
+void Swap(T* a, T* b)
+{
+	T temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
+int ShiftNegativesToLeft(int arr[], int size)
+{
+	int positiveStartIndex = -1; // -1 represents no found positive Start Index
+
+	for (int index = 0; index < size; ++index)
+	{
+		if (positiveStartIndex == -1 && arr[index] > 0)
+		{
+			positiveStartIndex = index;
+		}
+		if (arr[index] <= 0 && positiveStartIndex != -1) // If we have a positive start index
+		{
+			Swap(&arr[index], &arr[positiveStartIndex]);
+		}
+	}
+
+	return positiveStartIndex;
+}
+
+int FindMissing(int arr[], int size)
+{
+	int positiveStartIndex = ShiftNegativesToLeft(arr, size);
+
+	return FindMissingNoNegatives(arr + positiveStartIndex, size - positiveStartIndex);
 }
 
 
 int main()
 {
-	int arr[4]{ 2, 4, -1, 1};
+	int arr[4]{2, 4, 1, 3};
 
-	int result = FindFirstMissingPositive(arr, sizeof(arr) / sizeof(int));
+	int result = FindMissing(arr, sizeof(arr) / sizeof(int));
 
 	using namespace std;
 
